@@ -9,8 +9,12 @@ import json
 import os
 import sys
 import time
+from pathlib import Path
 
 import requests
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 
 def main() -> None:

@@ -9,7 +9,7 @@ from fpdf import FPDF
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "CASE_STUDY.pdf"
-REPO_URL = "https://github.com/germainsafari/runpod-flux-studio"
+REPO_URL = "https://github.com/germainsafari/Runpod"
 
 
 class CaseStudyPDF(FPDF):

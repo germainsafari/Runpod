@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import os
 import time
 from pathlib import Path
@@ -77,6 +78,20 @@ def build_payload(request: ChatRequest) -> dict:
     return payload
 
 
+async def extract_image_base64(client: httpx.AsyncClient, output: dict) -> str | None:
+    if output.get("image_base64"):
+        return output["image_base64"]
+
+    image_url = output.get("result") or output.get("image_url")
+    if not image_url:
+        return None
+
+    image_response = await client.get(image_url)
+    if image_response.status_code >= 400:
+        raise HTTPException(status_code=502, detail="Failed to download generated image")
+    return base64.b64encode(image_response.content).decode("utf-8")
+
+
 @app.get("/api/health")
 async def health():
     return {
@@ -127,9 +142,10 @@ async def chat_status(job_id: str):
         if status == "COMPLETED":
             if output.get("error"):
                 return StatusResponse(status=status, error=output["error"])
+            image_base64 = await extract_image_base64(client, output)
             return StatusResponse(
                 status=status,
-                image_base64=output.get("image_base64"),
+                image_base64=image_base64,
                 execution_time_ms=status_payload.get("executionTime"),
             )
 

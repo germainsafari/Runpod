@@ -6,6 +6,8 @@
 __pycache__/
 node_modules/
 output.png
+docker-build.log
+docker-push.log
 *.pyc
 .DS_Store
 
