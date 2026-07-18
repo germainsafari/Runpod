@@ -1,0 +1,8 @@
+{
+  "input": {
+    "prompt": "A photo of a cat astronaut floating in space, cinematic lighting",
+    "num_inference_steps": 20,
+    "width": 512,
+    "height": 512
+  }
+}

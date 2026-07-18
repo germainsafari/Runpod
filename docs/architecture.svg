@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 220" role="img" aria-label="Architecture diagram">
+  <defs>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d97757"/>
+      <stop offset="100%" stop-color="#c05621"/>
+    </linearGradient>
+  </defs>
+  <rect width="920" height="220" rx="16" fill="#171717"/>
+  <g font-family="Inter, Arial, sans-serif" font-size="14" fill="#f4f4f5">
+    <rect x="30" y="70" width="150" height="80" rx="14" fill="#252525" stroke="#3f3f46"/>
+    <text x="105" y="102" text-anchor="middle" font-weight="700">React Chat UI</text>
+    <text x="105" y="124" text-anchor="middle" fill="#a1a1aa">Prompts + images</text>
+
+    <rect x="240" y="70" width="150" height="80" rx="14" fill="#252525" stroke="#3f3f46"/>
+    <text x="315" y="102" text-anchor="middle" font-weight="700">FastAPI</text>
+    <text x="315" y="124" text-anchor="middle" fill="#a1a1aa">Job proxy</text>
+
+    <rect x="450" y="70" width="170" height="80" rx="14" fill="#252525" stroke="#3f3f46"/>
+    <text x="535" y="102" text-anchor="middle" font-weight="700">RunPod Serverless</text>
+    <text x="535" y="124" text-anchor="middle" fill="#a1a1aa">Queue + autoscale</text>
+
+    <rect x="680" y="70" width="210" height="80" rx="14" fill="url(#accent)"/>
+    <text x="785" y="102" text-anchor="middle" font-weight="700" fill="#fff">GPU Worker</text>
+    <text x="785" y="124" text-anchor="middle" fill="#fff">FLUX.1-dev</text>
+
+    <path d="M180 110 H240" stroke="#71717a" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M390 110 H450" stroke="#71717a" stroke-width="2"/>
+    <path d="M620 110 H680" stroke="#71717a" stroke-width="2"/>
+  </g>
+</svg>
