@@ -66,9 +66,17 @@ def main() -> None:
                 print(output["error"], file=sys.stderr)
                 sys.exit(1)
 
-            image_base64 = output["image_base64"]
+            if output.get("image_base64"):
+                image_bytes = base64.b64decode(output["image_base64"])
+            elif output.get("result") or output.get("image_url"):
+                image_url = output.get("result") or output.get("image_url")
+                image_bytes = requests.get(image_url, timeout=120).content
+            else:
+                print(json.dumps(body, indent=2), file=sys.stderr)
+                sys.exit(1)
+
             with open(args.output, "wb") as handle:
-                handle.write(base64.b64decode(image_base64))
+                handle.write(image_bytes)
             print(f"Saved image to {args.output}")
             print(json.dumps({k: v for k, v in body.items() if k != "output"}, indent=2))
             return

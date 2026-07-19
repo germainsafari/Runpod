@@ -10,8 +10,22 @@ RUN apt-get update && \
 
 WORKDIR /app
 
+# Install torch first from the CUDA 12.1 index, then install the rest pinned
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir \
+        torch==2.4.1 \
+        torchvision==0.19.1 \
+        --index-url https://download.pytorch.org/whl/cu121 && \
+    pip install --no-cache-dir \
+        "diffusers==0.32.2" \
+        "transformers==4.47.1" \
+        "accelerate==0.34.2" \
+        "sentencepiece==0.2.0" \
+        "protobuf==4.25.3" \
+        "pillow>=10.0.0" \
+        "huggingface-hub==0.26.5" \
+        "safetensors==0.4.5" \
+        "runpod>=1.7.0"
 
 COPY handler.py .
 
