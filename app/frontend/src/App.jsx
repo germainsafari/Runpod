@@ -2,17 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import ChatMessage from "./components/ChatMessage";
 import Composer from "./components/Composer";
 import EmptyState from "./components/EmptyState";
+import LibraryView from "./components/LibraryView";
+import SearchModal from "./components/SearchModal";
 import SettingsPanel from "./components/SettingsPanel";
 import Sidebar from "./components/Sidebar";
-import { useConversations } from "./hooks/useConversations";
-
-const DEFAULT_SETTINGS = {
-  num_inference_steps: 20,
-  guidance_scale: 3.5,
-  width: 512,
-  height: 512,
-  seed: null,
-};
+import { useAppState } from "./hooks/useAppState";
+import { fetchHealth, fetchJobStatus, submitGeneration } from "./utils/api";
 
 const STATUS_LABELS = {
   IN_QUEUE: "Queued on RunPod…",
@@ -21,29 +16,13 @@ const STATUS_LABELS = {
 };
 
 async function generateImage(prompt, settings, onProgress) {
-  const submit = await fetch("/api/chat/submit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, ...settings }),
-  });
-
-  const submitBody = await submit.json();
-  if (!submit.ok) {
-    throw new Error(submitBody.detail || "Failed to submit generation job");
-  }
-
+  const submitBody = await submitGeneration(prompt, settings);
   const jobId = submitBody.job_id;
   onProgress(STATUS_LABELS.IN_QUEUE);
 
   const deadline = Date.now() + 540_000;
   while (Date.now() < deadline) {
-    const statusResponse = await fetch(`/api/chat/status/${jobId}`);
-    const statusBody = await statusResponse.json();
-
-    if (!statusResponse.ok) {
-      throw new Error(statusBody.detail || "Failed to fetch job status");
-    }
-
+    const statusBody = await fetchJobStatus(jobId);
     const status = statusBody.status;
     if (STATUS_LABELS[status]) {
       onProgress(STATUS_LABELS[status]);
@@ -73,34 +52,64 @@ async function generateImage(prompt, settings, onProgress) {
 export default function App() {
   const {
     conversations,
+    projects,
+    settings,
     activeConversation,
     activeId,
+    activeView,
+    setActiveView,
+    libraryItems,
+    pinnedConversations,
+    recentConversations,
+    expandedProjects,
     startNewChat,
     selectConversation,
     deleteConversation,
+    renameConversation,
+    togglePinConversation,
+    moveConversationToProject,
+    createNewProject,
+    renameProject,
+    deleteProject,
+    toggleProjectExpanded,
+    setSettings,
     updateMessages,
-  } = useConversations();
+  } = useAppState();
 
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [health, setHealth] = useState(null);
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const bottomRef = useRef(null);
 
   const messages = activeConversation?.messages ?? [];
 
   useEffect(() => {
-    fetch("/api/health")
-      .then((res) => res.json())
+    fetchHealth()
       .then(setHealth)
       .catch(() => setHealth({ status: "error" }));
   }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isGenerating]);
+  }, [messages, isGenerating, activeView]);
+
+  useEffect(() => {
+    function handleShortcut(event) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setSearchOpen(true);
+      }
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "o") {
+        event.preventDefault();
+        startNewChat();
+      }
+    }
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, [startNewChat]);
 
   async function runGeneration(rawPrompt) {
     const trimmed = rawPrompt.trim();
@@ -109,11 +118,12 @@ export default function App() {
     setPrompt("");
     setIsGenerating(true);
     setMobileOpen(false);
+    setActiveView("chat");
 
     const loadingId = crypto.randomUUID();
     updateMessages((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), role: "user", content: trimmed },
+      { id: crypto.randomUUID(), role: "user", content: trimmed, createdAt: Date.now() },
       { id: loadingId, role: "assistant", status: "loading", progress: STATUS_LABELS.IN_QUEUE },
     ]);
 
@@ -136,6 +146,7 @@ export default function App() {
           imageBase64: result.image_base64,
           executionTimeMs: result.execution_time_ms,
           jobId: result.job_id,
+          createdAt: Date.now(),
         },
       ]);
     } catch (error) {
@@ -147,6 +158,7 @@ export default function App() {
           status: "error",
           content: error.message,
           retryPrompt: trimmed,
+          createdAt: Date.now(),
         },
       ]);
     } finally {
@@ -160,50 +172,99 @@ export default function App() {
   }
 
   const configured = health?.endpoint_configured && health?.api_key_configured;
+  const activeProject = projects.find((project) => project.id === activeConversation?.projectId);
 
   return (
     <div className="app-shell">
       <Sidebar
         conversations={conversations}
+        projects={projects}
+        pinnedConversations={pinnedConversations}
+        recentConversations={recentConversations}
+        expandedProjects={expandedProjects}
         activeId={activeId}
-        onNewChat={startNewChat}
-        onSelect={selectConversation}
-        onDelete={deleteConversation}
+        activeView={activeView}
+        libraryCount={libraryItems.length}
         configured={configured}
-        onOpenSettings={() => setSettingsOpen(true)}
         mobileOpen={mobileOpen}
+        onNewChat={startNewChat}
+        onSelect={(id) => {
+          selectConversation(id);
+          setMobileOpen(false);
+        }}
+        onDelete={deleteConversation}
+        onRename={renameConversation}
+        onTogglePin={togglePinConversation}
+        onMoveToProject={moveConversationToProject}
+        onCreateProject={createNewProject}
+        onRenameProject={renameProject}
+        onDeleteProject={deleteProject}
+        onToggleProjectExpanded={toggleProjectExpanded}
+        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenSearch={() => setSearchOpen(true)}
+        onOpenLibrary={() => {
+          setActiveView("library");
+          setMobileOpen(false);
+        }}
+        onSetView={setActiveView}
         onCloseMobile={() => setMobileOpen(false)}
       />
 
       <main className="chat-panel">
         <header className="chat-header">
-          <button className="mobile-menu" onClick={() => setMobileOpen(true)}>
+          <button type="button" className="mobile-menu" onClick={() => setMobileOpen(true)}>
             ☰
           </button>
-          <div>
-            <h2>{activeConversation?.title || "Flux Studio"}</h2>
-            <p>Describe an image. FLUX.1-dev generates it on RunPod Serverless.</p>
+          <div className="chat-header-copy">
+            <div className="chat-title-row">
+              <h2>
+                {activeView === "library"
+                  ? "Library"
+                  : activeConversation?.title || "Flux Studio"}
+              </h2>
+              {activeProject && activeView === "chat" ? (
+                <span className="project-chip">{activeProject.name}</span>
+              ) : null}
+            </div>
+            <p>
+              {activeView === "library"
+                ? "Browse and download every image you have created."
+                : "Describe an image. FLUX.1-dev generates it on RunPod Serverless."}
+            </p>
           </div>
+          <div className="model-badge">FLUX.1-dev</div>
         </header>
 
-        <section className="messages">
-          {messages.length === 0 ? (
-            <EmptyState onSelectPrompt={setPrompt} />
-          ) : (
-            messages.map((message) => (
-              <ChatMessage key={message.id} message={message} onRetry={runGeneration} />
-            ))
-          )}
-          <div ref={bottomRef} />
-        </section>
+        {activeView === "library" ? (
+          <LibraryView
+            items={libraryItems}
+            onOpenChat={(conversationId) => {
+              selectConversation(conversationId);
+              setActiveView("chat");
+            }}
+          />
+        ) : (
+          <>
+            <section className="messages">
+              {messages.length === 0 ? (
+                <EmptyState onSelectPrompt={setPrompt} />
+              ) : (
+                messages.map((message) => (
+                  <ChatMessage key={message.id} message={message} onRetry={runGeneration} />
+                ))
+              )}
+              <div ref={bottomRef} />
+            </section>
 
-        <Composer
-          prompt={prompt}
-          onPromptChange={setPrompt}
-          onSubmit={handleSubmit}
-          isGenerating={isGenerating}
-          onOpenSettings={() => setSettingsOpen(true)}
-        />
+            <Composer
+              prompt={prompt}
+              onPromptChange={setPrompt}
+              onSubmit={handleSubmit}
+              isGenerating={isGenerating}
+              onOpenSettings={() => setSettingsOpen(true)}
+            />
+          </>
+        )}
       </main>
 
       {settingsOpen ? (
@@ -211,6 +272,14 @@ export default function App() {
           settings={settings}
           onChange={setSettings}
           onClose={() => setSettingsOpen(false)}
+        />
+      ) : null}
+
+      {searchOpen ? (
+        <SearchModal
+          conversations={conversations}
+          onSelect={selectConversation}
+          onClose={() => setSearchOpen(false)}
         />
       ) : null}
     </div>

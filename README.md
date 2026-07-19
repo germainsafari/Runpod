@@ -41,6 +41,12 @@ Or from project root:
 .\start.ps1 -BuildFrontend
 ```
 
+## Deploy to the web
+
+Host the **backend on Render** and the **frontend on Vercel** (recommended):
+
+**[docs/DEPLOY_WEB.md](docs/DEPLOY_WEB.md)** — step-by-step guide with env vars and troubleshooting.
+
 ## RunPod deployment (summary)
 
 1. Accept the [FLUX.1-dev license](https://huggingface.co/black-forest-labs/FLUX.1-dev)

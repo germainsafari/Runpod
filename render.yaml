@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: flux-studio-api
+    runtime: python
+    rootDir: app/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: RUNPOD_API_KEY
+        sync: false
+      - key: RUNPOD_ENDPOINT_ID
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+    healthCheckPath: /api/health

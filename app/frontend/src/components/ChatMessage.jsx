@@ -1,10 +1,18 @@
-import { DownloadIcon } from "./Icons";
+import { CopyIcon, DownloadIcon } from "./Icons";
 
 function downloadImage(base64, prompt) {
   const link = document.createElement("a");
   link.href = `data:image/png;base64,${base64}`;
   link.download = `${prompt.slice(0, 40).replace(/[^\w]+/g, "-") || "flux-image"}.png`;
   link.click();
+}
+
+async function copyPrompt(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    // Clipboard may be unavailable in some contexts.
+  }
 }
 
 export default function ChatMessage({ message, onRetry }) {
@@ -61,13 +69,24 @@ export default function ChatMessage({ message, onRetry }) {
           loading="lazy"
         />
         <div className="message-actions">
-          <button
-            className="ghost-button"
-            onClick={() => downloadImage(message.imageBase64, message.prompt)}
-          >
-            <DownloadIcon />
-            Download PNG
-          </button>
+          <div className="message-action-group">
+            <button
+              type="button"
+              className="ghost-button compact"
+              onClick={() => downloadImage(message.imageBase64, message.prompt)}
+            >
+              <DownloadIcon />
+              Download
+            </button>
+            <button
+              type="button"
+              className="ghost-button compact"
+              onClick={() => copyPrompt(message.prompt)}
+            >
+              <CopyIcon />
+              Copy prompt
+            </button>
+          </div>
           {message.executionTimeMs ? (
             <span className="meta">
               Rendered in {(message.executionTimeMs / 1000).toFixed(1)}s

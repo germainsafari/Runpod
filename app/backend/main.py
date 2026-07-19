@@ -17,12 +17,17 @@ load_dotenv()
 RUNPOD_API_KEY = os.getenv("RUNPOD_API_KEY", "")
 RUNPOD_ENDPOINT_ID = os.getenv("RUNPOD_ENDPOINT_ID", "")
 RUNPOD_BASE_URL = "https://api.runpod.ai/v2"
+FRONTEND_URL = os.getenv("FRONTEND_URL", "")
 
 app = FastAPI(title="Flux Studio API", version="1.0.0")
 
+allowed_origins = ["*"]
+if FRONTEND_URL:
+    allowed_origins = [origin.strip() for origin in FRONTEND_URL.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
