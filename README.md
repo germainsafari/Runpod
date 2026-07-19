@@ -15,6 +15,8 @@ Deploy **FLUX.1-dev** on RunPod Serverless and interact with it through a **Chat
 | API proxy | `app/backend/main.py` |
 | CLI test tool | `scripts/test_endpoint.py` |
 | Submission PDF | `docs/CASE_STUDY.pdf` |
+| **Full project overview (with screenshots)** | **`docs/PROJECT_OVERVIEW.pdf`** |
+| Full project overview (Markdown) | `docs/PROJECT_OVERVIEW.md` |
 
 ## Quick start (local app)
 
@@ -101,6 +103,9 @@ Runpod/
 │   └── generate_case_study_pdf.py
 ├── docs/
 │   ├── DEPLOYMENT.md
+│   ├── DEPLOY_WEB.md
+│   ├── PROJECT_OVERVIEW.pdf  # Full case study walkthrough + screenshots (PDF)
+│   ├── PROJECT_OVERVIEW.md   # Same content in Markdown
 │   └── CASE_STUDY.pdf
 └── README.md
 ```
@@ -110,5 +115,3 @@ Runpod/
 - **GitHub:** https://github.com/germainsafari/runpod-flux-studio
 - **PDF case study:** `docs/CASE_STUDY.pdf`
 
-## Author
-Germain Safari
