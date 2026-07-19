@@ -105,5 +105,4 @@ Runpod/
 - **PDF case study:** `docs/CASE_STUDY.pdf`
 
 ## Author
-
-Germain Safari — RunPod Serverless assignment submission
+Germain Safari

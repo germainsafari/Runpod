@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -10,12 +10,11 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-# Install torch first from the CUDA 12.1 index, then install the rest pinned
 COPY requirements.txt .
 RUN pip install --no-cache-dir \
-        torch==2.4.1 \
-        torchvision==0.19.1 \
-        --index-url https://download.pytorch.org/whl/cu121 && \
+        torch==2.5.1 \
+        torchvision==0.20.1 \
+        --index-url https://download.pytorch.org/whl/cu124 && \
     pip install --no-cache-dir \
         "diffusers==0.32.2" \
         "transformers==4.47.1" \
