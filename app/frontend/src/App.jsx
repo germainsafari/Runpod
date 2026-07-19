@@ -7,10 +7,10 @@ import Sidebar from "./components/Sidebar";
 import { useConversations } from "./hooks/useConversations";
 
 const DEFAULT_SETTINGS = {
-  num_inference_steps: 28,
+  num_inference_steps: 20,
   guidance_scale: 3.5,
-  width: 1024,
-  height: 1024,
+  width: 512,
+  height: 512,
   seed: null,
 };
 

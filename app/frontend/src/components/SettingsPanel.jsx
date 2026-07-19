@@ -45,9 +45,8 @@ export default function SettingsPanel({ settings, onChange, onClose }) {
               value={settings.width}
               onChange={(event) => onChange({ ...settings, width: Number(event.target.value) })}
             >
-              <option value={512}>512</option>
+              <option value={512}>512 (recommended)</option>
               <option value={768}>768</option>
-              <option value={1024}>1024</option>
             </select>
           </label>
           <label>
@@ -56,9 +55,8 @@ export default function SettingsPanel({ settings, onChange, onClose }) {
               value={settings.height}
               onChange={(event) => onChange({ ...settings, height: Number(event.target.value) })}
             >
-              <option value={512}>512</option>
+              <option value={512}>512 (recommended)</option>
               <option value={768}>768</option>
-              <option value={1024}>1024</option>
             </select>
           </label>
         </div>

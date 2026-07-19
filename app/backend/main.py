@@ -33,8 +33,8 @@ class ChatRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=2000)
     num_inference_steps: int = Field(default=28, ge=1, le=50)
     guidance_scale: float = Field(default=3.5, ge=1.0, le=20.0)
-    width: int = Field(default=1024, ge=256, le=1536)
-    height: int = Field(default=1024, ge=256, le=1536)
+    width: int = Field(default=512, ge=256, le=768)
+    height: int = Field(default=512, ge=256, le=768)
     seed: int | None = None
 
 
