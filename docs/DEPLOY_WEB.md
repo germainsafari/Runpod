@@ -87,6 +87,15 @@ VITE_API_BASE_URL=https://flux-studio-api.onrender.com
 
 No trailing slash. Redeploy after changing this.
 
+**Important:** In Vercel project settings, set **Root Directory** to `app/frontend`. Do **not** use a build command like `cd app/frontend && ...` — Vercel is already inside that folder.
+
+| Vercel setting | Value |
+|----------------|-------|
+| Root Directory | `app/frontend` |
+| Build Command | `npm run build` (default) |
+| Output Directory | `dist` |
+| Install Command | `npm install` (default) |
+
 4. Deploy → open `https://your-app.vercel.app`
 
 5. Go back to Render and set `FRONTEND_URL` to your Vercel URL (for CORS). Redeploy backend.
